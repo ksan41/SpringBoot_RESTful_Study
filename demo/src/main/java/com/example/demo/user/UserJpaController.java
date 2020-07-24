@@ -70,4 +70,20 @@ public class UserJpaController {
                 .toUri();
         return ResponseEntity.created(location).build();
     }
+
+    // /jpa/users/900001/posts
+    // 사용자가 작성한 전체 게시글을 조회
+    @GetMapping("/users/{id}/posts")
+    public List<Post> retrieveAllPostsByUser(@PathVariable int id){
+        // 우선은 해당 사용자가 존재하는지에 대한 조건검사를 한다.
+
+        Optional<User> user = userRepository.findById(id);
+
+        if(!user.isPresent()){ // 유저 정보가 존재하지 않을 때
+            throw new UserNotFoundException(String.format("ID{%s} not found",id));
+        }
+
+        // 유저 데이터가 존재할 경우에만 getPosts()메소드가 실행되도록 한다.
+        return user.get().getPosts();
+    }
 }
