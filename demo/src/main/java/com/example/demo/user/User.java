@@ -29,6 +29,7 @@ public class User {
 
 
     // PK 컬럼으로 지정.
+    // 값이 자동으로 생성될 수 있도록 @GeneratedValue 추가.
     @Id
     @GeneratedValue
     private Integer id;
