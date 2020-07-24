@@ -23,6 +23,9 @@ public class UserJpaController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
     // 유저정보 전체조회
     // http://localhost:8088/jpa/users
     @GetMapping("/users")
@@ -85,5 +88,30 @@ public class UserJpaController {
 
         // 유저 데이터가 존재할 경우에만 getPosts()메소드가 실행되도록 한다.
         return user.get().getPosts();
+    }
+
+
+    // 게시글 생성용
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity<Post> createPost(@PathVariable int id, @RequestBody Post post){
+        // 새 게시글 생성
+        // userId가 같이 포함되어야 하기 때문에 사용자 정보를 검색해 id값을 지정해야 함.
+        // 우선은 해당 사용자가 존재하는지에 대한 조건검사를 한다.
+        Optional<User> user = userRepository.findById(id);
+
+        if(!user.isPresent()){ // 유저 정보가 존재하지 않을 때
+            throw new UserNotFoundException(String.format("ID{%s} not found",id));
+        }
+
+        // 검색해 온 사용자 정보를 post객체에 저장.
+        post.setUser(user.get());
+        Post savedPost = postRepository.save(post);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedPost.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).build();
     }
 }
